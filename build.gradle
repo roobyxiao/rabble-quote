@@ -1,0 +1,78 @@
+plugins {
+    id "java"
+    id "org.springframework.boot" version "2.3.12.RELEASE"
+    id "io.spring.dependency-management" version "1.0.14.RELEASE"
+}
+
+group "com.whzz"
+version "0.1-SNAPSHOT"
+sourceCompatibility = '11'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+configurations {
+    implementation {
+        exclude module: 'spring-boot-starter-tomcat'
+        exclude module: 'spring-boot-starter-logging'
+        exclude module: 'junit'
+    }
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+ext {
+    hutoolVersion = "5.8.8"
+    commonslang3Version = "3.12.0"
+    modelmapperVersion = "3.1.0"
+    fastjsonVersion = "1.2.79"
+    okhttpVersion = "4.10.0"
+    guavaVersion = "31.1-jre"
+    //levelDbVersion = "0.12"
+    //jedisVersion = "3.3.0"
+    //swaggerVersion = "2.9.2"
+}
+
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-log4j2"
+    implementation "org.springframework.boot:spring-boot-starter-data-mongodb"
+    //implementation "org.springframework.boot:spring-boot-starter-jetty"
+    //implementation "org.springframework.boot:spring-boot-starter-freemarker"
+    // 封装了表单验证相关注解
+    //implementation "org.springframework.boot:spring-boot-starter-validation"
+
+    //implementation "com.sun.mail:jakarta.mail"
+    implementation "com.google.guava:guava:$guavaVersion"
+    implementation "org.modelmapper:modelmapper:$modelmapperVersion"
+    implementation "org.springframework.retry:spring-retry"
+    implementation "org.aspectj:aspectjweaver"
+    implementation "com.squareup.okhttp3:okhttp:$okhttpVersion"
+    implementation "cn.hutool:hutool-all:$hutoolVersion"
+    implementation "com.alibaba:fastjson:$fastjsonVersion"
+    implementation "org.apache.commons:commons-lang3:$commonslang3Version"
+    //implementation "io.springfox:springfox-swagger2:$swaggerVersion"
+    //implementation "io.springfox:springfox-swagger-ui:$swaggerVersion"
+
+    // 缓存
+    // LevelDB是 Google 开源的持久化 KV 单机数据库，具有很高的随机写、顺序读写性能，解决了 Redis 双写导致的一系列问题
+    //implementation "org.iq80.leveldb:leveldb:$levelDbVersion"
+    //implementation "redis.clients:jedis:$jedisVersion"
+    runtimeOnly "mysql:mysql-connector-java"
+
+    compileOnly "org.projectlombok:lombok"
+    annotationProcessor "org.projectlombok:lombok"
+    testCompileOnly "org.projectlombok:lombok"
+    testAnnotationProcessor "org.projectlombok:lombok"
+
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+}
