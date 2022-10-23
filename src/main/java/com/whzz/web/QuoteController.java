@@ -26,7 +26,7 @@ public class QuoteController {
         //quoteService.restoreCalendar(Constants.WC_LIMIT_START_DATE);
         //quoteService.restoreStock(Constants.START_DATE);
         //quoteService.restoreAllSnowBallDailies(Constants.START_DATE, false);
-        //quoteService.restoreDividends();
+        quoteService.restoreDividends();
         quoteService.restoreTushareLimit();
         quoteService.restoreWenCaiLimit();
         quoteService.restoreEastMoneyLimit(Constants.EM_LIMIT_START_DATE);
