@@ -9,6 +9,7 @@ import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
 import org.modelmapper.convention.MatchingStrategies;
+import org.modelmapper.internal.bytebuddy.implementation.bytecode.Division;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -72,6 +73,17 @@ public class ModelMapperConfiguration {
         }
     };
 
+    private Converter<EmDividendDto, Dividend> emDividendDtoDividendConverter = new AbstractConverter<EmDividendDto, Dividend>() {
+        @Override
+        protected Dividend convert(EmDividendDto emDividendDto) {
+            return Dividend.builder().code(SymbolUtil.tsCodeToCode(emDividendDto.getSECUCODE()))
+                    .planDate(LocalDate.parse(emDividendDto.getPLANNOTICEDATE().split(" ")[0]))
+                    .dividendDate(LocalDate.parse(emDividendDto.getEXDIVIDENDDATE().split(" ")[0]))
+                    .ratio(emDividendDto.getBONUSITRATIO())
+                    .bonus(emDividendDto.getPRETAXBONUSRMB()).build();
+        }
+    };
+
     @Bean
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
@@ -86,6 +98,7 @@ public class ModelMapperConfiguration {
         modelMapper.addConverter(emStockDtoStockConverter);
         modelMapper.addConverter(tsLimitDtoDailyConverter);
         modelMapper.addConverter(upLimitDtoUpLimitConverter);
+        modelMapper.addConverter(emDividendDtoDividendConverter);
         //modelMapper.addConverter(backDtoLimitUpExportDtoConverter);
         configure(modelMapper);
 

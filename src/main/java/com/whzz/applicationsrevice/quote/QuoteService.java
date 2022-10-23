@@ -3,13 +3,13 @@ package com.whzz.applicationsrevice.quote;
 import cn.hutool.core.collection.CollectionUtil;
 import com.google.common.collect.Streams;
 import com.google.common.util.concurrent.RateLimiter;
-import com.whzz.annotation.SnowBallCookie;
 import com.whzz.applicationsrevice.*;
 import com.whzz.constants.Constants;
 import com.whzz.domain.bo.*;
 import com.whzz.utils.SymbolUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -115,7 +115,7 @@ public class QuoteService {
                 .map(daily -> modelMapper.map(daily, Daily.class)).collect(Collectors.toList());
         if (!containToday)
             dailies = dailies.stream().filter(daily -> daily.getDate().isBefore(LocalDate.now())).collect(Collectors.toList());
-        dailyApplicationService.saveAll(dailies);
+        dailyApplicationService.insertAll(dailies);
         //前复权
         var beforeForwardStream = snowBallService.getDailiesByStock(code, startDate, -250, Constants.SNOW_BALL_DAILY_TYPE_BEFORE).stream();
         var afterForwardStream = snowBallService.getDailiesByStock(code, startDate, 3000, Constants.SNOW_BALL_DAILY_TYPE_BEFORE).stream();
@@ -123,7 +123,7 @@ public class QuoteService {
                 .map(forward -> modelMapper.map(forward, Forward.class)).collect(Collectors.toList());
         if (!containToday)
             forwards = forwards.stream().filter(forward -> forward.getDate().isBefore(LocalDate.now())).collect(Collectors.toList());
-        forwardApplicationService.saveAll(forwards);
+        forwardApplicationService.insertAll(forwards);
         if (forwards.size() != dailies.size())
             log.error(code + "复权数据不匹配");
         log.warn(code + "日线同步" + dailies.size() + "条······");
@@ -141,8 +141,8 @@ public class QuoteService {
         var dtos = eastMoneyService.getEmDailiesByDate(date);
         var dailies = dtos.stream().map(dto -> modelMapper.map(dto, Daily.class)).collect(Collectors.toList());
         var forwards = dtos.stream().map(dto -> modelMapper.map(dto, Forward.class)).collect(Collectors.toList());
-        dailyApplicationService.saveAll(dailies);
-        forwardApplicationService.saveAll(forwards);
+        dailyApplicationService.insertAll(dailies);
+        forwardApplicationService.insertAll(forwards);
         log.warn("当日K线同步完成······");
         return dtos.size();
     }
@@ -185,7 +185,7 @@ public class QuoteService {
             var limits = dtos.stream().filter(dto -> SymbolUtil.isHs(SymbolUtil.symbolToCode(dto.getC())))
                     .map(dto -> modelMapper.map(dto, UpLimit.class))
                     .map(limit -> {
-                        var daily = dailyApplicationService.findByCodeAndDate(limit.getCode(), cal.getDate());
+                        var daily = dailyApplicationService.findById(limit.getCode(), cal.getDate());
                         daily.ifPresent(x -> {
                             limit.setDate(cal.getDate());
                             limit.setKeep(x.getLow() == x.getHigh() ? true : false);
@@ -213,7 +213,7 @@ public class QuoteService {
             var limits = wenCaiService.getWenCaiLimits(tradeCal.getDate());
             var results = limits.stream().filter(limit -> SymbolUtil.isHs(limit.getCode()))
                     .map(limit -> {
-                        var daily = dailyApplicationService.findByCodeAndDate(limit.getCode(), limit.getDate());
+                        var daily = dailyApplicationService.findById(limit.getCode(), limit.getDate());
                         daily.ifPresent(x -> {
                             if (x.getPercent() > 7) {
                                 limit.setKeep(x.getLow() == x.getHigh() ? true : false);
@@ -234,9 +234,12 @@ public class QuoteService {
         log.warn("开始同步分红送配······");
         var stocks = stockApplicationService.findAll();
         stocks.forEach(stock -> {
-            var dividends = eastMoneyService.getDividendsByCode(stock.getCode());
+            var dividends = eastMoneyService.getDividendsByCode(stock.getCode()).stream()
+                    .filter(emDividendDto -> StringUtils.isNotBlank(emDividendDto.getPLANNOTICEDATE())
+                            && StringUtils.isNotBlank(emDividendDto.getEXDIVIDENDDATE()))
+                    .map(x -> modelMapper.map(x, Dividend.class)).collect(Collectors.toList());
             var forwards = forwardApplicationService.findByCodeOrderByDateDesc(stock.getCode());
-            if (CollectionUtil.isNotEmpty(dividends) && CollectionUtil.isNotEmpty(forwards)) {
+            if (!dividends.isEmpty() && !forwards.isEmpty()) {
                 var startDate = Streams.findLast(forwards.stream()).map(Forward::getDate);
                 startDate.ifPresent(x -> {
                     dividends.removeIf(dividend -> !dividend.getDividendDate().isAfter(x) || dividend.getDividendDate().isAfter(LocalDate.now()));
@@ -265,9 +268,8 @@ public class QuoteService {
             dividends.removeIf(unusedDividend);
             forwardApplicationService.deleteAll(forwardList);
             var forwards = restoreForwardsByStock(dividend.getCode(), Constants.START_DATE);
-            if (dividends.isEmpty()) {
-                forwardApplicationService.saveAll(forwards);
-            } else {
+            forwardApplicationService.insertAll(forwards);
+            if (!dividends.isEmpty()) {
                 updateForwardsByDividends(forwards, dividends);
             }
             log.warn("处理" + dividend.getCode() + "当日分红送配······");
@@ -320,10 +322,12 @@ public class QuoteService {
             var ratio = sortedDividends.stream()
                     .filter(dividend -> forward.getDate().isBefore(dividend.getDividendDate()))
                     .map(Dividend::getRatio)
-                    .reduce(BigDecimal.ONE, BigDecimal::multiply).floatValue();
+                    .map(BigDecimal::floatValue)
+                    .map(x -> (x + 10)/10)
+                    .reduce(1f, (a, b) -> a * b);
             forward.setRatio(ratio);
         });
-        forwardApplicationService.saveAll(forwards);
+        forwardApplicationService.updateAll(forwards);
     }
 
 }

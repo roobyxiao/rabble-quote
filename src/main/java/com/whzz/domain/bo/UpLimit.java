@@ -10,14 +10,16 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
+@IdClass(DailyId.class)
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "up_limit")
 public class UpLimit {
-    private long id;
+    @Id
     private String code;
+    @Id
     private LocalDate date;
     //首次涨停时间
     private LocalTime firstTime;

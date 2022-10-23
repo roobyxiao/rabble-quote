@@ -7,10 +7,12 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.Table;
 import java.time.LocalDate;
 
 @Entity
+@IdClass(DailyId.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,8 +20,8 @@ import java.time.LocalDate;
 @Table(name = "daily")
 public class Daily {
     @Id
-    private long id;
     private String code;
+    @Id
     private LocalDate date;
     private float open;
     private float high;

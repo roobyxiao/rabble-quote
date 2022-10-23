@@ -8,7 +8,7 @@ public class Constants {
 
     public static final LocalDate EM_LIMIT_START_DATE = LocalDate.parse("2019-12-02");
 
-    public static final LocalDate WC_LIMIT_START_DATE = LocalDate.parse("2014-07-10");
+    public static final LocalDate WC_LIMIT_START_DATE = LocalDate.parse("2014-06-26");
 
     public static final LocalDate WC_LIMIT_END_DATE = LocalDate.parse("2019-12-01");
 

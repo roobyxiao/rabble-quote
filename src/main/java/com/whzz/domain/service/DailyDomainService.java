@@ -1,10 +1,14 @@
 package com.whzz.domain.service;
 
 import com.whzz.domain.bo.Daily;
+import com.whzz.domain.bo.DailyId;
 import com.whzz.domain.repository.DailyRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -14,8 +18,21 @@ import java.util.Optional;
 public class DailyDomainService {
 
     private final DailyRepository repository;
-    public void saveAll(List<Daily> dailies) {
-        repository.saveAll(dailies);
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Transactional
+    public void insertAll(List<Daily> dailies) {
+        dailies.forEach(entityManager::persist);
+        entityManager.flush();
+        entityManager.clear();
+    }
+
+    @Transactional
+    public void updateAll(List<Daily> dailies) {
+        dailies.forEach(entityManager::merge);
+        entityManager.flush();
+        entityManager.clear();
     }
 
     public void updateLimit(String code, LocalDate date, float limitUp, float limitDown) {
@@ -26,11 +43,8 @@ public class DailyDomainService {
         return repository.findByCode(code);
     }
 
-    public Optional<Daily> findByCodeAndDate(String code, LocalDate date) {
-        return repository.findByCodeAndDate(code, date);
+    public Optional<Daily> findById(String code, LocalDate date) {
+        return repository.findById(DailyId.builder().code(code).date(date).build());
     }
 
-    public boolean dailyExists(String code, LocalDate date) {
-        return repository.existsByCodeAndDate(code, date);
-    }
 }

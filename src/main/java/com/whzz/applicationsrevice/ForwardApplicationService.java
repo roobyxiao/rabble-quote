@@ -12,8 +12,12 @@ import java.util.List;
 public class ForwardApplicationService {
     private final ForwardDomainService domainService;
 
-    public void saveAll(List<Forward> forwards) {
-        domainService.saveAll(forwards);
+    public void insertAll(List<Forward> forwards) {
+        domainService.insertAll(forwards);
+    }
+
+    public void updateAll(List<Forward> forwards) {
+        domainService.updateAll(forwards);
     }
 
     public void deleteAll(List<Forward> forwards) {

@@ -2,12 +2,9 @@ package com.whzz.applicationsrevice.quote;
 
 import com.alibaba.fastjson.JSON;
 import com.whzz.applicationsrevice.StockApplicationService;
+import com.whzz.applicationsrevice.quote.dto.*;
 import com.whzz.domain.bo.Dividend;
 import com.whzz.domain.bo.Stock;
-import com.whzz.applicationsrevice.quote.dto.EmDailyDto;
-import com.whzz.applicationsrevice.quote.dto.EmLimitDto;
-import com.whzz.applicationsrevice.quote.dto.EmStockDto;
-import com.whzz.applicationsrevice.quote.dto.EmTickDataDto;
 import com.whzz.utils.OkHttpUtil;
 import com.whzz.utils.SymbolUtil;
 import lombok.AllArgsConstructor;
@@ -101,7 +98,7 @@ public class EastMoneyService {
      * 分红送配
      * 东方财富网
      */
-    public List<Dividend> getDividendsByCode(String code) {
+    public List<EmDividendDto> getDividendsByCode(String code) {
         var symbol = SymbolUtil.codeToSymbol(code);
         var url = "https://datacenter-web.eastmoney.com/api/data/v1/get";
         var params = Map.of("sortColumns", "EX_DIVIDEND_DATE",
@@ -116,8 +113,8 @@ public class EastMoneyService {
         var result = response.getJSONObject("result");
         if (result != null) {
             var data = result.getString("data");
-            var dividends = JSON.parseArray(data, Dividend.class);
-            dividends.removeIf(dividend -> dividend.getDividendDate() == null);
+            var dividends = JSON.parseArray(data, EmDividendDto.class);
+            dividends.removeIf(dividend -> dividend.getEXDIVIDENDDATE() == null);
             return dividends;
         }
         return List.of();

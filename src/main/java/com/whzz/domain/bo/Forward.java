@@ -12,6 +12,7 @@ import javax.persistence.Table;
 import java.time.LocalDate;
 
 @Entity
+@IdClass(DailyId.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,8 +21,8 @@ import java.time.LocalDate;
 public class Forward
 {
     @Id
-    private long id;
     private String code;
+    @Id
     private LocalDate date;
     private float open;
     private float high;

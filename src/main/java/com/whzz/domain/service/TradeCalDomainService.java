@@ -23,7 +23,7 @@ public class TradeCalDomainService {
     }
 
     public List<TradeCal> findOpenCals(LocalDate startDate, LocalDate endDate) {
-        return repository.findAllByDateBetweenAndOpenIsTrue(startDate, endDate);
+        return repository.findByDateBetweenAndOpenIsTrue(startDate, endDate);
     }
 
     public TradeCal findOpenDayBefore(TradeCal cal) {

@@ -15,7 +15,6 @@ repositories {
 
 configurations {
     implementation {
-        exclude module: 'spring-boot-starter-tomcat'
         exclude module: 'spring-boot-starter-logging'
         exclude module: 'junit'
     }

@@ -42,7 +42,7 @@ public class CsvTickDataConvertService {
                         var symbol = fileName.split("\\.")[0];
                         var code = SymbolUtil.symbolToCode(symbol);
                         var date = LocalDate.parse(dateStr, DateTimeFormatter.BASIC_ISO_DATE);
-                        var daily = dailyApplicationService.findByCodeAndDate(code, date);
+                        var daily = dailyApplicationService.findById(code, date);
                         daily.ifPresent(x -> {
                             if (x.getHigh() / x.getLastClose() > 1.07) {
                                 var csvReader = CsvUtil.getReader();
