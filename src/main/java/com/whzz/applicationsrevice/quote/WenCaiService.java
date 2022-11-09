@@ -7,6 +7,7 @@ import com.whzz.utils.OkHttpUtil;
 import com.whzz.utils.SymbolUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -89,10 +90,24 @@ public class WenCaiService {
         var endTimeStr = item.getString("最终涨停时间[" + date.format(DateTimeFormatter.BASIC_ISO_DATE) + "]");
         var open = item.getIntValue("涨停开板次数[" + date.format(DateTimeFormatter.BASIC_ISO_DATE) + "]");
         var last = item.getIntValue("连续涨停天数[" + date.format(DateTimeFormatter.BASIC_ISO_DATE) + "]");
+        var zttj = item.getString("几天几板[" + date.format(DateTimeFormatter.BASIC_ISO_DATE) + "]");
+        var limitCount = "1/1";
+        if (StringUtils.isEmpty(zttj)) {
+            limitCount = last + "/" + last;
+        } else {
+            if (!StringUtils.equals("首板涨停", zttj)) {
+                var days = zttj.split("天")[0];
+                var ct = zttj.split("天")[1].split("板")[0];
+                limitCount = ct + "/" + days;
+            }
+        }
         UpLimit limit = UpLimit.builder().code(code).date(date)
                 .firstTime(firstTimeStr == null ? null : LocalTime.parse(firstTimeStr))
                 .endTime(endTimeStr == null ? null : LocalTime.parse(endTimeStr))
-                .open(open).last(last).build();
+                .open(open)
+                .last(last)
+                .limitCount(limitCount)
+                .build();
         return limit;
     }
 

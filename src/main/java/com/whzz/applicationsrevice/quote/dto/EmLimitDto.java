@@ -9,4 +9,12 @@ public class EmLimitDto {
     private String lbt;
     private int zbc;
     private int lbc;
+    private Zttj zttj;
+
+    @Data
+    public static class Zttj {
+        private int ct;
+        private int days;
+    }
 }
+

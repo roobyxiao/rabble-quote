@@ -125,7 +125,7 @@ public class EastMoneyService {
      * 分红送配 当日数据
      * 东方财富网
      */
-    public List<Dividend> getDividendsByDate(LocalDate date) {
+    public List<EmDividendDto> getDividendsByDate(LocalDate date) {
         var url = "https://datacenter-web.eastmoney.com/api/data/v1/get";
         var params = Map.of("sortColumns", "EX_DIVIDEND_DATE",
                 "sortTypes", -1 + "",
@@ -138,9 +138,8 @@ public class EastMoneyService {
         var result = response.getJSONObject("result");
         if (result != null) {
             var data = result.getString("data");
-            var dividends = JSON.parseArray(data, Dividend.class);
-            dividends.removeIf(dividend -> !SymbolUtil.isHs(dividend.getCode()) ||
-                    !dividend.getDividendDate().isEqual(date));
+            var dividends = JSON.parseArray(data, EmDividendDto.class);
+            dividends.removeIf(dividend -> !SymbolUtil.isHs(SymbolUtil.tsCodeToCode(dividend.getSECUCODE())));
             return dividends;
         }
         return List.of();

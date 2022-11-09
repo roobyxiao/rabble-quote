@@ -10,11 +10,12 @@ import org.springframework.stereotype.Repository;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface DailyRepository extends JpaRepository<Daily, DailyId>{
-    List<Daily> findByCode(String code);
+    List<Daily> findByCodeOrderByDate(String code);
+    List<Daily> findByCodeAndDateLessThanOrderByDate(String code, LocalDate date);
+    List<Daily> findByCodeAndDateGreaterThanEqualOrderByDate(String code, LocalDate date);
     @Transactional
     @Modifying
     @Query(value = "update Daily set limitUp = :limitUp, limitDown = :limitDown where code = :code and date = :date", nativeQuery = true)

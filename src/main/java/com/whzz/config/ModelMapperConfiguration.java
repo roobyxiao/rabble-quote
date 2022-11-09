@@ -69,7 +69,9 @@ public class ModelMapperConfiguration {
                     .firstTime(DataTimeUtil.emTimeToLocalTime(emLimitDto.getFbt()))
                     .endTime(DataTimeUtil.emTimeToLocalTime(emLimitDto.getLbt()))
                     .open(emLimitDto.getZbc())
-                    .last(emLimitDto.getLbc()).build();
+                    .last(emLimitDto.getLbc())
+                    .limitCount(emLimitDto.getZttj().getCt() + "/" + emLimitDto.getZttj().getDays())
+                    .build();
         }
     };
 
@@ -158,6 +160,7 @@ public class ModelMapperConfiguration {
                 .addMappings(mapper -> mapper.map(EmDailyDto::getF60, Forward::setLastClose))
                 .addMappings(mapper -> mapper.map(EmDailyDto::getF47, Forward::setVolume))
                 .addMappings(mapper -> mapper.map(EmDailyDto::getF48, Forward::setAmount))
+                .addMappings(mapper -> mapper.map(EmDailyDto::getF57, Forward::setCode))
                 .addMappings(mapper -> mapper.map(EmDailyDto::getF168, Forward::setTurn))
                 .addMappings(mapper -> mapper.map(EmDailyDto::getF170, Forward::setPercent));
     }

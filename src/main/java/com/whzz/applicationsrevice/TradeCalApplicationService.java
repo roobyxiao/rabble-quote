@@ -27,6 +27,10 @@ public class TradeCalApplicationService {
         domainService.saveAll(cals);
     }
 
+    public boolean isOpen(LocalDate date) {
+        return domainService.isOpen(date);
+    }
+
     public List<TradeCal> findOpenCals(LocalDate startDate) {
         return findOpenCals(startDate, LocalDate.now());
     }

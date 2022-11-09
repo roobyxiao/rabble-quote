@@ -186,14 +186,13 @@ public class QuoteService {
                     .map(dto -> modelMapper.map(dto, UpLimit.class))
                     .map(limit -> {
                         var daily = dailyApplicationService.findById(limit.getCode(), cal.getDate());
-                        daily.ifPresent(x -> {
+                        return daily.map(x -> {
                             limit.setDate(cal.getDate());
                             limit.setKeep(x.getLow() == x.getHigh() ? true : false);
-                            limit.setPersist(true);
-                        });
-                        return limit;
+                            return limit;
+                        }).orElse(null);
                     })
-                    .filter(UpLimit::isPersist)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
             upLimitApplicationService.saveAll(limits);
             log.warn(cal.getDate() + "涨停板信息同步完成······");
@@ -214,15 +213,11 @@ public class QuoteService {
             var results = limits.stream().filter(limit -> SymbolUtil.isHs(limit.getCode()))
                     .map(limit -> {
                         var daily = dailyApplicationService.findById(limit.getCode(), limit.getDate());
-                        daily.ifPresent(x -> {
-                            if (x.getPercent() > 7) {
-                                limit.setKeep(x.getLow() == x.getHigh() ? true : false);
-                                limit.setPersist(true);
-                            }
-                        });
-                        return limit;
-                    })
-                    .filter(UpLimit::isPersist)
+                        return daily.filter(x -> x.getPercent() > 7).map(x -> {
+                            limit.setKeep(x.getLow() == x.getHigh() ? true : false);
+                            return limit;
+                        }).orElse(null);
+                    }).filter(Objects::nonNull)
                     .collect(Collectors.toList());
             upLimitApplicationService.saveAll(results);
         });
@@ -260,14 +255,18 @@ public class QuoteService {
      */
     public List<String> restoreDividendByDate(LocalDate date) {
         log.warn("开始同步当日分红送配······");
-        var dividendList= eastMoneyService.getDividendsByDate(date);
+        var emDividendDtos= eastMoneyService.getDividendsByDate(date);
+        var dividendList = emDividendDtos.stream()
+                .map(emDividendDto -> modelMapper.map(emDividendDto, Dividend.class))
+                .filter(dividend -> dividend.getDividendDate().equals(LocalDate.now()))
+                .collect(Collectors.toList());
         var codes = dividendList.stream().map(dividend -> {
             var dividends = dividendApplicationService.findByCode(dividend.getCode());
             var forwardList = forwardApplicationService.findByCodeOrderByDateDesc(dividend.getCode());
             dividends.add(0, dividend);
             dividends.removeIf(unusedDividend);
             forwardApplicationService.deleteAll(forwardList);
-            var forwards = restoreForwardsByStock(dividend.getCode(), Constants.START_DATE);
+            var forwards = restoreForwardsByStock(dividend.getCode(), Constants.START_DATE, false);
             forwardApplicationService.insertAll(forwards);
             if (!dividends.isEmpty()) {
                 updateForwardsByDividends(forwards, dividends);
@@ -285,20 +284,23 @@ public class QuoteService {
      * 东方财富网
      * @param date
      */
-    public void restoreTickByDate(LocalDate date)
+    public int restoreTickByDate(LocalDate date)
     {
         log.warn("开始同步tick数据······");
+        int count = 0;
         var stocks = stockApplicationService.getListedStocks();
         for (Stock stock: stocks){
             var code = stock.getCode();
             var tickDataDtos = eastMoneyService.getTickByDate(code, date);
             if (!tickDataDtos.isEmpty()) {
+                count++;
                 var tickData = tickDataDtos.stream().map(tickDataDto -> modelMapper.map(tickDataDto, Tick.TickData.class)).collect(Collectors.toList());
                 var tick = Tick.builder().code(code).date(date.toString()).data(tickData).build();
-                tickApplicationService.save(tick);
+                tickApplicationService.saveToFile(tick);
             }
         }
         log.warn("tick数据同步完成······");
+        return count;
     }
 
     /**
@@ -306,11 +308,13 @@ public class QuoteService {
      * 雪球
      * @param startDate
      */
-    private List<Forward> restoreForwardsByStock(String code, LocalDate startDate)
+    private List<Forward> restoreForwardsByStock(String code, LocalDate startDate, boolean containToday)
     {
         var beforeForwardStream = snowBallService.getDailiesByStock(code, startDate, -250, Constants.SNOW_BALL_DAILY_TYPE_BEFORE).stream();
         var afterForwardStream = snowBallService.getDailiesByStock(code, startDate, 3000, Constants.SNOW_BALL_DAILY_TYPE_BEFORE).stream();
         var forwards = Stream.concat(beforeForwardStream, afterForwardStream);
+        if (!containToday)
+            forwards = forwards.filter(forward -> forward.getDate().isBefore(LocalDate.now()));
         return forwards.map(forward -> modelMapper.map(forward, Forward.class)).collect(Collectors.toList());
     }
 

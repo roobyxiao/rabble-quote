@@ -5,6 +5,7 @@ import com.whzz.domain.service.ForwardDomainService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -22,6 +23,18 @@ public class ForwardApplicationService {
 
     public void deleteAll(List<Forward> forwards) {
         domainService.deleteAll(forwards);
+    }
+
+    public List<Forward> findByCodeAndDateLessThan(String code, LocalDate date) {
+        return domainService.findByCodeAndDateLessThan(code, date);
+    }
+
+    public List<Forward> findByCodeAndDateGreaterThanEqual(String code, LocalDate date) {
+        return domainService.findByCodeAndDateGreaterThanEqual(code, date);
+    }
+
+    public List<Forward> findByCodeOrderByDate(String code) {
+        return domainService.findByCodeOrderByDate(code);
     }
 
     public List<Forward> findByCodeOrderByDateDesc(String code) {

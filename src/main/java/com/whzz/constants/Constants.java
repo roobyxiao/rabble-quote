@@ -1,6 +1,7 @@
 package com.whzz.constants;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class Constants {
 
@@ -15,4 +16,6 @@ public class Constants {
     public static final String SNOW_BALL_DAILY_TYPE_BEFORE = "before";
 
     public static final String SNOW_BALL_DAILY_TYPE_NORMAL = "normal";
+
+    public static final List<String> SKIP_CODES = List.of("sh.603800", "sz.301068");
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -36,6 +37,18 @@ public class ForwardDomainService {
         forwards.forEach(entityManager::remove);
         entityManager.flush();
         entityManager.clear();
+    }
+
+    public List<Forward> findByCodeAndDateLessThan(String code, LocalDate date) {
+        return repository.findByCodeAndDateLessThanOrderByDate(code, date);
+    }
+
+    public List<Forward> findByCodeAndDateGreaterThanEqual(String code, LocalDate date) {
+        return repository.findByCodeAndDateGreaterThanEqualOrderByDate(code, date);
+    }
+
+    public List<Forward> findByCodeOrderByDate(String code) {
+        return repository.findByCodeOrderByDate(code);
     }
 
     public List<Forward> findByCodeOrderByDateDesc(String code) {

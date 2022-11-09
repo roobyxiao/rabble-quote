@@ -40,7 +40,15 @@ public class DailyDomainService {
     }
 
     public List<Daily> findByCode(String code) {
-        return repository.findByCode(code);
+        return repository.findByCodeOrderByDate(code);
+    }
+
+    public List<Daily> findByCodeAndDateLessThan(String code, LocalDate date) {
+        return repository.findByCodeAndDateLessThanOrderByDate(code, date);
+    }
+
+    public List<Daily> findByCodeAndDateGreaterThanEqual(String code, LocalDate startDate) {
+        return repository.findByCodeAndDateGreaterThanEqualOrderByDate(code, startDate);
     }
 
     public Optional<Daily> findById(String code, LocalDate date) {

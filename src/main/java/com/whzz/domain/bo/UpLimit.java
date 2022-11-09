@@ -29,6 +29,8 @@ public class UpLimit {
     private int open;
     //连板次数
     private int last;
+
+    private String limitCount;
     //是否一字涨停
     @Builder.Default
     private boolean keep = false;

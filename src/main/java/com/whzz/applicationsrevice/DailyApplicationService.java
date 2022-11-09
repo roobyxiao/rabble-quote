@@ -28,11 +28,19 @@ public class DailyApplicationService {
                 x.setLimitDown(daily.getLimitDown());
                 return x;
             }).orElse(null);
-        }).filter(Objects::nonNull).collect(Collectors.toList()));
+         }).filter(Objects::nonNull).collect(Collectors.toList()));
     }
 
     public List<Daily> findByCode(String code) {
         return domainService.findByCode(code);
+    }
+
+    public List<Daily> findByCodeAndDateLessThan(String code, LocalDate date) {
+        return domainService.findByCodeAndDateLessThan(code, date);
+    }
+
+    public List<Daily> findByCodeAndDateGreaterThanEqual(String code, LocalDate date) {
+        return domainService.findByCodeAndDateGreaterThanEqual(code, date);
     }
 
     public Optional<Daily> findById(String code, LocalDate date) {
